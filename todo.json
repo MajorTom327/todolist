@@ -1,0 +1,10 @@
+[
+    {
+        "cat": "0",
+        "name": "an todo",
+        "done": false,
+        "edit": false,
+        "pinned": false,
+        "show": false
+    }
+]

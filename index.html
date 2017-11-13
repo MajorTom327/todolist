@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title>/tod(o|ay)/g</title>
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+		<script src="https://use.fontawesome.com/452826394c.js"></script>
+		<script src="http://momentjs.com/downloads/moment.js"></script>
+		<style>
+			h2 {
+				text-decoration: underline;
+			}
+			.pinned {
+				border-left: 8px solid #ad0000;
+			}
+		</style>
+	</head>
+	<body>
+		<div class="container">
+			<div class="row">
+				<div class="col-xs-12 text-center">
+					<h2>/tod(o|ay)/g</h2>
+				</div>
+			</div>
+			<div class="row" id="wish-list">
+				<table class="table">
+					<tr class="row">
+						<th class="col-xs-12 text-center" colspan="2">En cours...</th>
+					</tr>
+					<tr class="row" v-for="(el, index) in sortedlist" :class="'bg-' + imp[el.cat] + ((el.pinned) ? ' pinned' : '')" v-if="!el.done" @mouseout="el.show = false;" @mouseover="el.show = true;">
+						<td class="col-xs-11 name" v-if="!el.edit">{{el.name}}</td>
+						<td class="col-xs-11" v-if="el.edit" >
+							<div class="input-group">
+								<input v-model="el.name" class="form-control">
+								<span class="input-group-addon btn" target="blank" :href="el.url" @click="el.pinned = !(el.pinned);">
+									<i class="fa fa-xs fa-thumb-tack"></i>
+								</span>
+							</div>
+						</td>
+						<td class="col-xs-1" v-show="!(el.show || el.edit)"></td>
+						<td class="col-xs-1" v-show="el.show || el.edit">
+							<table>
+								<tr>
+									<td v-show="el.edit">
+										<span class="btn btn-info" @click="el.cat = (parseInt(el.cat) + ((parseInt(el.cat) < 4) ? 1 : 0)).toString()" >
+										<i class="fa fa-arrow-up"></i>
+										</span>
+									</td>
+									<td v-show="el.edit">
+										<span class="btn btn-danger" target="blank" :href="el.url" @click="trash(index)">
+											<i class="fa fa-trash-o"></i>
+										</span>
+									</td>
+									<td>
+										<span class="btn btn-warning" target="blank" :href="el.url" @click="el.edit = !(el.edit);">
+											<i class="fa fa-pencil"></i>
+										</span>
+									</td>
+									<td>
+										<span class="btn btn-success" target="blank" :href="el.url" @click="el.done = true;">
+											<i class="fa fa-check"></i>
+										</span>
+									</td>
+									<td v-show="el.edit">
+										<span class="btn btn-info" @click="el.cat = (parseInt(el.cat) - ((parseInt(el.cat) > 0) ? 1 : 0)).toString()" >
+										<i class="fa fa-arrow-down"></i>
+										</span>
+									</td>
+								</tr>
+							</table>
+						</td>
+					</tr>
+				</table>
+				<div class="container">
+					<div class="row">
+						<div class="col-xs-3 col-sm-3 col-lg-2">
+							<select class="form-control" v-model="newtask_imp">
+								<option selected value="0">Normal</option>
+								<option value="1">+1</option>
+								<option value="2">+2</option>
+								<option value="3">+3</option>
+								<option value="4">+4</option>
+							</select>
+						</div>
+						<div class="col-xs-2 col-sm-2 col-lg-2 text-center">
+							<div class="btn-group">
+								<div class="btn" :class="(newtask_pin) ? 'btn-warning active' : 'btn-default'" @click="newtask_pin = !(newtask_pin)"><i class="fa fa-xs fa-thumb-tack"></i></div>
+								<div class="btn" :class="(newtask_edit) ? 'btn-info active' : 'btn-default'" @click="newtask_edit = !(newtask_edit)"><i class="fa fa-xs fa-pencil"></i></div>
+								<div class="btn" :class="(newtask_done) ? 'btn-success active' : 'btn-default'" @click="newtask_done = !(newtask_done)"><i class="fa fa-xs fa-check"></i></div>
+							</div>
+						</div>
+						<div class="input-group col-xs-7 col-sm-7 col-lg-8">
+							<input class="form-control" placeholder="nouvelle tache" v-model="newtask"/>
+							<span class="input-group-addon btn" @click="addTask"><i class="fa fa-xs fa-sign-in"></i></span>
+						</div>
+					</div>
+				</div>
+				<table class="table">
+					<tr class="row">
+						<th class="col-xs-12 text-center" colspan="2">Effectu&eacute;</th>
+					</tr>
+					<tr class="row" v-for="el in sortedlist" :class="'bg-' + imp[el.cat] + ((el.pinned) ? ' pinned' : '')" v-if="el.done" @mouseout="el.show = false;" @mouseover="el.show = true;">
+						<td class="col-xs-11" v-if="!el.edit">{{el.name}}</td>
+						<td class="col-xs-11" v-if="el.edit" >
+							<div class="input-group">
+								<input v-model="el.name" class="form-control">
+								<span class="input-group-addon btn" target="blank" :href="el.url" @click="el.pinned = !(el.pinned);">
+									<i class="fa fa-xs fa-thumb-tack"></i>
+								</span>
+							</div>
+						</td>
+						<td class="col-xs-1" v-show="!(el.show || el.edit)"></td>
+						<td class="col--1 text-right" v-show="el.show || el.edit">
+							<table>
+								<tr>
+									<td v-show="el.edit">
+										<span class="btn btn-info" @click="el.cat = (parseInt(el.cat) + ((parseInt(el.cat) < 4) ? 1 : 0)).toString()" >
+										<i class="fa fa-arrow-up"></i>
+										</span>
+									</td>
+									<td v-show="el.edit">
+										<span class="btn btn-danger" target="blank" :href="el.url" @click="trash(index)">
+											<i class="fa fa-trash-o"></i>
+										</span>
+									</td>
+									<td>
+										<span class="btn btn-warning" target="blank" :href="el.url" @click="el.edit = !(el.edit);"><i class="fa fa-pencil"></i></span>
+									</td>
+									<td>
+										<span class="btn btn-danger" target="blank" :href="el.url" @click="el.done = false;"><i class="fa fa-times"></i></span>
+									</td>
+									<td v-show="el.edit">
+										<span class="btn btn-info" @click="el.cat = (parseInt(el.cat) - ((parseInt(el.cat) > 0) ? 1 : 0)).toString()" >
+										<i class="fa fa-arrow-down"></i>
+										</span>
+									</td>
+								</tr>
+							</table>
+						</td>
+					</tr>
+				</table>
+			</div>
+		</div>
+	</body>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.5.2/vue.js"></script>
+	<script>
+	function getCookieTodoValue() {
+		var cookies = document.cookie.split(/; /g);
+		var values = JSON.parse('[{\
+			"cat": "0",\
+			"name": "default todo",\
+			"done": false,\
+			"edit": false,\
+			"pinned": false,\
+			"show": false\
+		}]');
+		for (var i = 0; i < cookies.length; i++)
+		{
+			var cookie = cookies[i];
+			if (cookie.indexOf("=") == -1)
+				continue;
+			var nom = cookie.substring(0, cookie.indexOf("="));
+			var valeur = cookie.substring(cookie.indexOf("=") + 1);
+			if (nom == "todolist")
+				values = JSON.parse(valeur);
+		}
+		return values;
+	}
+
+	var vm = new Vue({
+			el: "#wish-list",
+			data: {
+				newtask : "",
+				newtask_imp: 0,
+				newtask_pin: false,
+				newtask_done: false,
+				newtask_edit: false,
+				imp: [
+					"inverse",
+					"info",
+					"success",
+					"warning",
+					"danger"
+				],
+				lst: getCookieTodoValue()
+			},
+			computed: {
+				sortedlist: function () {
+					var x = this.lst;
+					x = x.sort(function (a, b) {
+						return (parseInt(b.cat) - parseInt(a.cat));
+					});
+					return (x);
+				}
+			},
+			methods: {
+				trash: function (index) {
+					console.log(index);
+					this.lst.splice(index, 1);
+					this.addCookie();
+				},
+				addCookie: function () {
+					var tdl = JSON.stringify(this.lst);
+					var ctd = JSON.stringify(getCookieTodoValue());
+					if (ctd !== tdl)
+						document.cookie = 'todolist=' + JSON.stringify(this.lst) + "; expires=" + moment().add(6, 'months').toDate();
+				},
+				addTask: function () {
+					var t = this.newtask;
+					if (t === "")
+						return ;
+					this.lst.push(JSON.parse('{\
+				        "cat": "' + this.newtask_imp + '",\
+				        "name": "' + t + '",\
+				        "done": ' + this.newtask_done + ',\
+						"edit": ' + this.newtask_edit + ',\
+						"pinned": ' + this.newtask_pin + ',\
+						"show": false\
+				    }'));
+					this.newtask = "";
+					this.newtask_imp = "0";
+					this.newtask_done = false;
+					this.newtask_edit = false;
+					this.newtask_pin = false;
+
+					this.addCookie();
+				}
+			}
+	});
+	setInterval(function () {
+		vm.addCookie();
+	}, 10000);
+	</script>
+</html>
