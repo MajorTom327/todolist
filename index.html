@@ -26,7 +26,13 @@
 					</h2>
 				</div>
 			</div>
-			<div class="row" id="wish-list">
+			<ul class="nav nav-tabs nav-justified">
+				<li class="active"><a data-toggle="tab" href="#todo-list">Todo list</a></li>
+				<li><a data-toggle="tab" href="#notes">Notes</a></li>
+			</ul>
+			<div class="tab-content">
+				<div id="todo-list" class="tab-pane fade in active">
+					<div class="row" id="wish-list">
 				<table class="table">
 					<tr class="row">
 						<th class="col-xs-12 text-center" colspan="2">En cours...</th>
@@ -144,6 +150,21 @@
 					</tr>
 				</table>
 			</div>
+				</div>
+				<div id="notes"class="tab-pane fade in active">
+					<div class="row">
+						<textarea class="form-control" rows="24" style="resize: none;" placeholde="notes..." v-model="content"></textarea>
+					</div>
+					<div class="row">
+						<div class="col-lg-2 col-lg-offset-6 btn btn-success" @click="addCookie">
+							<i class="fa fa-lg fa-floppy-o"></i>
+						</div>
+						<div class="col-lg-2  btn btn-danger" @click="content = '';">
+							<i class="fa fa-lg fa-times"></i>
+						</div>
+					</div>
+				</div>
+			</div>
 		</div>
 	</body>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.5.2/vue.js"></script>
@@ -171,66 +192,100 @@ function getCookieTodoValue() {
 	return values;
 }
 
+function getNoteValue() {
+	var cookies = document.cookie.split(/; /g);
+	var values = '';
+	for (var i = 0; i < cookies.length; i++)
+	{
+		var cookie = cookies[i];
+		if (cookie.indexOf("=") == -1)
+			continue;
+		var nom = cookie.substring(0, cookie.indexOf("="));
+		var valeur = cookie.substring(cookie.indexOf("=") + 1);
+		if (nom == "note")
+			values = (valeur.replace(/<br \/>/g, '\r\n'));
+	}
+	return values;
+}
+
+var vm2 = new Vue({
+	el: "#notes",
+	data: {
+		content: getNoteValue()
+	},
+	methods: {
+		addCookie: function () {
+					   var tdl = this.content;
+					   var ctd = getNoteValue();
+					   if (ctd !== tdl)
+						   document.cookie = 'note=' + this.content.replace(/\r?\n/g, '<br />') + "; expires=" + moment().add(6, 'months').toDate();
+				   }
+	}
+})
+
 var vm = new Vue({
-el: "#wish-list",
-data: {
-newtask : "",
-newtask_imp: 0,
-newtask_pin: false,
-newtask_done: false,
-newtask_edit: false,
-imp: [
-"inverse",
-"info",
-"success",
-"warning",
-"danger"
-],
-lst: getCookieTodoValue()
-},
-computed: {
-sortedlist: function () {
-var x = this.lst;
-x = x.sort(function (a, b) {
-		return (parseInt(b.cat) - parseInt(a.cat));
-		});
-return (x);
-			}
-		  },
-methods: {
-trash: function (index) {
+	el: "#wish-list",
+	data: {
+		newtask : "",
+		newtask_imp: 0,
+		newtask_pin: false,
+		newtask_done: false,
+		newtask_edit: false,
+		imp: [
+			"inverse",
+			"info",
+			"success",
+			"warning",
+			"danger"
+		],
+		lst: getCookieTodoValue()
+	},
+	computed: {
+		sortedlist: function () {
+			var x = this.lst;
+			x = x.sort(function (a, b) {
+					return (parseInt(b.cat) - parseInt(a.cat));
+				});
+			return (x);
+		}
+	},
+	methods: {
+		trash: function (index) {
 		   console.log(index);
 		   this.lst.splice(index, 1);
 		   this.addCookie();
 	   },
-addCookie: function () {
-			   var tdl = JSON.stringify(this.lst);
-			   var ctd = JSON.stringify(getCookieTodoValue());
-			   if (ctd !== tdl)
-				   document.cookie = 'todolist=' + JSON.stringify(this.lst) + "; expires=" + moment().add(6, 'months').toDate();
-		   },
-addTask: function () {
-			 var t = this.newtask;
-			 if (t === "")
-				 return ;
-			 this.lst.push(JSON.parse('{\
-						 "cat": "' + this.newtask_imp + '",\
-						 "name": "' + t + '",\
-						 "done": ' + this.newtask_done + ',\
-						 "edit": ' + this.newtask_edit + ',\
-						 "pinned": ' + this.newtask_pin + ',\
-						 "show": false\
-						 }'));
-			 this.newtask = "";
-			 this.newtask_imp = "0";
-			 this.newtask_done = false;
-			 this.newtask_edit = false;
-			 this.newtask_pin = false;
-
-			 this.addCookie();
-		 }
-		 }
+	   addCookie: function () {
+		   var tdl = JSON.stringify(this.lst);
+		   var ctd = JSON.stringify(getCookieTodoValue());
+		   if (ctd !== tdl)
+		   		document.cookie = 'todolist=' + JSON.stringify(this.lst) + "; expires=" + moment().add(6, 'months').toDate();
+	   },
+	   addTask: function () {
+		 	var t = this.newtask;
+		 	if (t === "")
+			 	return ;
+		 	this.lst.push(JSON.parse('{\
+					 "cat": "' + this.newtask_imp + '",\
+					 "name": "' + t + '",\
+					 "done": ' + this.newtask_done + ',\
+					 "edit": ' + this.newtask_edit + ',\
+					 "pinned": ' + this.newtask_pin + ',\
+					 "show": false\
+					 }'));
+			this.newtask = "";
+			this.newtask_imp = "0";
+			this.newtask_done = false;
+			this.newtask_edit = false;
+			this.newtask_pin = false;
+			this.addCookie();
+	 	}
+	}
 });
+setInterval(function () {
+		vm2.addCookie();
+		}, 10000);
+
 setInterval(function () {
 		vm.addCookie();
 		}, 10000);
