@@ -137,7 +137,7 @@
 										<span class="btn btn-warning" target="blank" :href="el.url" @click="el.edit = !(el.edit);"><i class="fa fa-pencil"></i></span>
 									</td>
 									<td>
-										<span class="btn btn-danger" target="blank" :href="el.url" @click="el.done = false;"><i class="fa fa-times"></i></span>
+										<span class="btn btn-danger" target="blank" :href="el.url" @click="el.done = false; el.show = false;"><i class="fa fa-times"></i></span>
 									</td>
 									<td v-show="el.edit">
 										<span class="btn btn-info" @click="el.cat = (parseInt(el.cat) - ((parseInt(el.cat) > 0) ? 1 : 0)).toString()" >
